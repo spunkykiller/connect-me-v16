@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import productData from "../data/productData";
 import SEO from "../components/SEO";
 import "./productDetails.css";
@@ -252,50 +253,16 @@ export default function ProductDetails() {
 
   // --- Helper to parse/render specs for Tosibox/LoRaWAN ---
   const renderSpecializedSpecs = (specsString) => {
-    if (!specsString) return null;
-
-    // 1. Structure the data
-    const struct = [];
-    const lines = specsString.split('\n').filter(l => l.trim());
-
-    let currentList = null;
-
-    lines.forEach(line => {
-      const trimmed = line.trim();
-      // Heuristic: Ends with ':' or is likely a header
-      const isHeader = trimmed.endsWith(':') ||
-        ['Ports', 'Connections', 'Dimensions', 'Order code', 'Basic Features', 'Technical Specifications'].includes(trimmed);
-
-      if (isHeader) {
-        if (currentList) {
-          struct.push({ type: 'list', items: currentList });
-          currentList = null;
-        }
-        struct.push({ type: 'header', text: trimmed.replace(/:$/, '') });
-      } else {
-        if (!currentList) currentList = [];
-        currentList.push(trimmed);
-      }
-    });
-    // Flush last list
-    if (currentList) struct.push({ type: 'list', items: currentList });
-
-    // 2. Render JSX
-    return struct.map((item, idx) => {
-      if (item.type === 'header') {
-        return <h5 key={idx} className="spec-category">{item.text}</h5>;
-      }
-      return (
-        <ul key={idx} className="spec-list">
-          {item.items.map((liText, liIdx) => (
-            <li key={liIdx}>{liText}</li>
-          ))}
-        </ul>
-      );
-    });
+    // ... (existing code)
   };
 
-
+  const traverseBack = () => {
+    // Navigate back to the subcategory list if possible, or main products page
+    if (category && subcategory) {
+      return `/products/${category}/${subcategory}`;
+    }
+    return "/products";
+  };
 
   // --- SPECIALIZED VIEW FOR TOSI ---
   if (isTosiPage) {
@@ -305,6 +272,14 @@ export default function ProductDetails() {
           title={`${product.name} - ConnectME`}
           description={TOSI_GENERAL_DESC.substring(0, 160)}
         />
+
+        {/* BACK BUTTON */}
+        <div className="pd-back-wrapper">
+          <Link to={traverseBack()} className="pd-back-btn" aria-label="Go Back">
+            <FaArrowLeft />
+          </Link>
+        </div>
+
         {/* BREADCRUMBS */}
         <div className="pd-breadcrumb">
           {breadcrumbs.map((b, i) => (
@@ -396,6 +371,13 @@ export default function ProductDetails() {
           description={product.description || "High-performance LoRaWAN gateways for industrial IoT connectivity."}
         />
 
+        {/* BACK BUTTON */}
+        <div className="pd-back-wrapper">
+          <Link to={traverseBack()} className="pd-back-btn" aria-label="Go Back">
+            <FaArrowLeft />
+          </Link>
+        </div>
+
         {/* BREADCRUMBS */}
         <div className="pd-breadcrumb">
           {breadcrumbs.map((b, i) => (
@@ -405,7 +387,6 @@ export default function ProductDetails() {
             </span>
           ))}
         </div>
-
         {/* HERO SECTION */}
         <div className="pd-hero">
           <div className="pd-hero-content">
@@ -467,8 +448,6 @@ export default function ProductDetails() {
       </div>
     );
   }
-
-
   // --- GENERIC VIEW (Old Layout) ---
   return (
     <div className="pd-page">
@@ -476,6 +455,13 @@ export default function ProductDetails() {
         title={`${product.name} - ConnectME Product`}
         description={product.description ? product.description.substring(0, 160) : "ConnectME Industrial IoT Product"}
       />
+
+      {/* BACK BUTTON */}
+      <div className="pd-back-wrapper">
+        <Link to={traverseBack()} className="pd-back-btn" aria-label="Go Back">
+          <FaArrowLeft />
+        </Link>
+      </div>
 
       {/* BREADCRUMBS */}
       <div className="pd-breadcrumb">
@@ -491,295 +477,267 @@ export default function ProductDetails() {
       <div className="pd-hero">
         <div className="pd-hero-content">
           <h1 className="pd-title">{product.name}</h1>
-          {product.overview && (
-            <div className="pd-overview">
-              {product.overview.split('\n').map((para, i) => <p key={i}>{para}</p>)}
-            </div>
-          )}
-
+          <div className="pd-overview">
+            <p>{product.overview || product.description}</p>
+          </div>
           <div className="pd-actions">
             <Link to="/contact" className="btn-primary">Request a Quote</Link>
-            {product.brochure ? (
-              <a href={product.brochure} target="_blank" rel="noopener noreferrer" className="btn-secondary">
-                Download Datasheet
-              </a>
-            ) : (
-              <button className="btn-secondary" disabled>Download Datasheet (Coming Soon)</button>
-            )}
           </div>
         </div>
         <div className="pd-hero-image">
-          <img src={product.image} alt={product.name} />
+          <img src={product.image} alt={product.name} loading="lazy" />
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
+      {/* VARIANT CARDS GRID */}
       <div className="pd-content">
+        <h2 className="section-title">Product Variants</h2>
 
-        {/* TABS NAVIGATION */}
-        <div className="pd-tabs">
-          <button
-            className={`pd-tab-btn ${activeTab === 'features' ? 'active' : ''}`}
-            onClick={() => setActiveTab('features')}
-          >
-            Key Features
-          </button>
-          {product.specs && (
-            <button
-              className={`pd-tab-btn ${activeTab === 'specs' ? 'active' : ''}`}
-              onClick={() => setActiveTab('specs')}
-            >
-              Specifications
-            </button>
-          )}
-          {(product.dimensions || product.technicalFlow || product.dimensionsDescription) && (
-            <button
-              className={`pd-tab-btn ${activeTab === 'dimensions' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dimensions')}
-            >
-              Dimensions & Flow
-            </button>
-          )}
-          {(product.orderCodes || product.orderCodesDescription) && (
-            <button
-              className={`pd-tab-btn ${activeTab === 'order' ? 'active' : ''}`}
-              onClick={() => setActiveTab('order')}
-            >
-              Order Codes
-            </button>
-          )}
-          {(product.application || product.applicationDescription) && (
-            <button
-              className={`pd-tab-btn ${activeTab === 'application' ? 'active' : ''}`}
-              onClick={() => setActiveTab('application')}
-            >
-              Applications
-            </button>
-          )}
-          {relatedProducts.length > 0 && (
-            <button
-              className={`pd-tab-btn ${activeTab === 'related' ? 'active' : ''}`}
-              onClick={() => setActiveTab('related')}
-            >
-              Related Products
-            </button>
+        <div className="unified-products-grid" style={{ marginTop: '40px' }}>
+          {product.variants.map((variant) => (
+            <div key={variant.id} className="premium-product-card">
+              <div className="product-image-wrapper">
+                <img src={variant.image} alt={variant.name} className="product-image" loading="lazy" />
+              </div>
+              <div className="product-details">
+                <div className="product-subtitle">GATEWAYS & CONNECTIVITY</div>
+                <h3 className="product-title">{variant.name}</h3>
+
+                <p className="product-description">{variant.description}</p>
+
+                <div className="product-specs-preview">
+                  {variant.specs && Object.entries(variant.specs).slice(0, 3).map(([key, val]) => (
+                    <div className="spec-row" key={key}>
+                      <span className="spec-key">{key}</span>
+                      <span className="spec-val" title={val}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="product-tags">
+                  {variant.tags && variant.tags.map((tag, idx) => (
+                    <span key={idx} className="tag-badge">{tag}</span>
+                  ))}
+                </div>
+
+                <Link
+                  to={`/products/${category}/${subcategory}/${productId}/${variant.id}`}
+                  className="view-more-link"
+                >
+                  View Product →
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// --- GENERIC VIEW (Old Layout) ---
+return (
+  <div className="pd-page">
+    <SEO
+      title={`${product.name} - ConnectME Product`}
+      description={product.description ? product.description.substring(0, 160) : "ConnectME Industrial IoT Product"}
+    />
+
+    {/* BREADCRUMBS */}
+    <div className="pd-breadcrumb">
+      {breadcrumbs.map((b, i) => (
+        <span key={i}>
+          {b.path !== "#" ? <Link to={b.path}>{b.label}</Link> : <span>{b.label}</span>}
+          {i < breadcrumbs.length - 1 && " / "}
+        </span>
+      ))}
+    </div>
+
+    {/* HERO SECTION */}
+    <div className="pd-hero">
+      <div className="pd-hero-content">
+        <h1 className="pd-title">{product.name}</h1>
+        {product.overview && (
+          <div className="pd-overview">
+            {product.overview.split('\n').map((para, i) => <p key={i}>{para}</p>)}
+          </div>
+        )}
+
+        <div className="pd-actions">
+          <Link to="/contact" className="btn-primary">Request a Quote</Link>
+          {product.brochure ? (
+            <a href={product.brochure} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              Download Datasheet
+            </a>
+          ) : (
+            <button className="btn-secondary" disabled>Download Datasheet (Coming Soon)</button>
           )}
         </div>
+      </div>
+      <div className="pd-hero-image">
+        <img src={product.image} alt={product.name} />
+      </div>
+    </div>
 
-        {/* TAB CONTENT */}
-        <div className="pd-tab-content">
+    {/* MAIN CONTENT AREA */}
+    <div className="pd-content">
 
-          {/* FEATURES TAB */}
-          {activeTab === 'features' && (
-            <section className="pd-tab-panel">
-              <h2 className="section-title">Key Features</h2>
-              <ul className="pd-features-list">
-                {product.features?.map((f, i) => (
-                  <li key={i}>{f}</li>
-                )) || <p>No specific features listed.</p>}
-              </ul>
-            </section>
-          )}
+      {/* TABS NAVIGATION */}
+      <div className="pd-tabs">
+        <button
+          className={`pd-tab-btn ${activeTab === 'features' ? 'active' : ''}`}
+          onClick={() => setActiveTab('features')}
+        >
+          Key Features
+        </button>
+        {product.specs && (
+          <button
+            className={`pd-tab-btn ${activeTab === 'specs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('specs')}
+          >
+            Specifications
+          </button>
+        )}
+        {(product.dimensions || product.technicalFlow || product.dimensionsDescription) && (
+          <button
+            className={`pd-tab-btn ${activeTab === 'dimensions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dimensions')}
+          >
+            Dimensions & Flow
+          </button>
+        )}
+        {(product.orderCodes || product.orderCodesDescription) && (
+          <button
+            className={`pd-tab-btn ${activeTab === 'order' ? 'active' : ''}`}
+            onClick={() => setActiveTab('order')}
+          >
+            Order Codes
+          </button>
+        )}
+        {(product.application || product.applicationDescription) && (
+          <button
+            className={`pd-tab-btn ${activeTab === 'application' ? 'active' : ''}`}
+            onClick={() => setActiveTab('application')}
+          >
+            Applications
+          </button>
+        )}
+        {relatedProducts.length > 0 && (
+          <button
+            className={`pd-tab-btn ${activeTab === 'related' ? 'active' : ''}`}
+            onClick={() => setActiveTab('related')}
+          >
+            Related Products
+          </button>
+        )}
+      </div>
 
-          {/* SPECS TAB - With Optional 2-Column Controller Specs */}
-          {activeTab === 'specs' && product.specs && (
-            <section className="pd-tab-panel">
-              <h2 className="section-title">Specifications</h2>
-              {product.controllerSpecs ? (
-                <div className="pd-dual-specs-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
-                  <div className="specs-column">
-                    <h3 className="specs-col-title" style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#0eb582', fontWeight: '600' }}>Valve Specification</h3>
-                    <div className="pd-specs-table-wrapper">
-                      <table className="pd-specs-table">
-                        <tbody>
-                          {Object.entries(product.specs).map(([key, val]) => (
-                            <tr key={key}>
-                              <td className="spec-label">{key}</td>
-                              <td className="spec-value">{val}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div className="specs-column">
-                    <h3 className="specs-col-title" style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#262626', fontWeight: '600', backgroundColor: '#f5f5f5', padding: '5px 10px', borderRadius: '4px', display: 'inline-block' }}>Controller Unit (CU) Specification</h3>
-                    <div className="pd-specs-table-wrapper">
-                      <table className="pd-specs-table">
-                        <tbody>
-                          {Object.entries(product.controllerSpecs).map(([key, val]) => (
-                            <tr key={key}>
-                              <td className="spec-label">{key}</td>
-                              <td className="spec-value">{val}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Default Single Spec Table */
-                <div className="pd-specs-table-wrapper">
-                  <table className="pd-specs-table">
-                    <tbody>
-                      {Object.entries(product.specs).map(([key, val]) => (
-                        <tr key={key}>
-                          <td className="spec-label">{key}</td>
-                          <td className="spec-value">{val}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          )}
+      {/* TAB CONTENT */}
+      <div className="pd-tab-content">
 
-          {/* DIMENSIONS & FLOW TAB */}
-          {activeTab === 'dimensions' && (
-            <section className="pd-tab-panel">
-              {product.technicalFlow && (
-                <>
-                  <h2 className="section-title">Technical Specifications - Flow</h2>
+        {/* FEATURES TAB */}
+        {activeTab === 'features' && (
+          <section className="pd-tab-panel">
+            <h2 className="section-title">Key Features</h2>
+            <ul className="pd-features-list">
+              {product.features?.map((f, i) => (
+                <li key={i}>{f}</li>
+              )) || <p>No specific features listed.</p>}
+            </ul>
+          </section>
+        )}
+
+        {/* SPECS TAB - With Optional 2-Column Controller Specs */}
+        {activeTab === 'specs' && product.specs && (
+          <section className="pd-tab-panel">
+            <h2 className="section-title">Specifications</h2>
+            {product.controllerSpecs ? (
+              <div className="pd-dual-specs-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
+                <div className="specs-column">
+                  <h3 className="specs-col-title" style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#0eb582', fontWeight: '600' }}>Valve Specification</h3>
                   <div className="pd-specs-table-wrapper">
-                    <table className="pd-data-table">
-                      <thead>
-                        <tr>
-                          {product.technicalFlowColumns ? (
-                            product.technicalFlowColumns.map((col, i) => <th key={i}>{col.label}</th>)
-                          ) : (
-                            <>
-                              <th>Nominal Diameter (DN)</th>
-                              <th>Minimum Flow qmin (m³/h)</th>
-                              <th>Nominal Flow qp (m³/h)</th>
-                              <th>Maximum Flow qmax (m³/h)</th>
-                              <th>Length (mm)</th>
-                            </>
-                          )}
-                        </tr>
-                      </thead>
+                    <table className="pd-specs-table">
                       <tbody>
-                        {product.technicalFlow.map((row, i) => (
-                          <tr key={i}>
-                            {product.technicalFlowColumns ? (
-                              product.technicalFlowColumns.map((col, j) => <td key={j}>{row[col.key]}</td>)
-                            ) : (
-                              <>
-                                <td>{row.dn}</td>
-                                <td>{row.min}</td>
-                                <td>{row.nominal}</td>
-                                <td>{row.max}</td>
-                                <td>{row.length}</td>
-                              </>
-                            )}
+                        {Object.entries(product.specs).map(([key, val]) => (
+                          <tr key={key}>
+                            <td className="spec-label">{key}</td>
+                            <td className="spec-value">{val}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                </>
-              )}
-
-              {product.dimensionsDescription && (
-                <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
-                  <h2 className="section-title">Dimensions</h2>
-                  {product.dimensionsDescription}
                 </div>
-              )}
-
-              {product.dimensions && (
-                <>
-                  <h2 className="section-title">Dimensions</h2>
+                <div className="specs-column">
+                  <h3 className="specs-col-title" style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#262626', fontWeight: '600', backgroundColor: '#f5f5f5', padding: '5px 10px', borderRadius: '4px', display: 'inline-block' }}>Controller Unit (CU) Specification</h3>
                   <div className="pd-specs-table-wrapper">
-                    <table className="pd-data-table">
-                      <thead>
-                        <tr>
-                          {product.dimensionsColumns ? (
-                            product.dimensionsColumns.map((col, i) => <th key={i}>{col.label}</th>)
-                          ) : (
-                            <>
-                              <th>Nominal Diameter (DN)</th>
-                              <th>Thread Size</th>
-                              <th>Length (L)</th>
-                              <th>Width (W)</th>
-                              <th>Height (H)</th>
-                            </>
-                          )}
-                        </tr>
-                      </thead>
+                    <table className="pd-specs-table">
                       <tbody>
-                        {product.dimensions.map((row, i) => (
-                          <tr key={i}>
-                            {product.dimensionsColumns ? (
-                              product.dimensionsColumns.map((col, j) => <td key={j}>{row[col.key]}</td>)
-                            ) : (
-                              <>
-                                <td>{row.dn}</td>
-                                <td>{row.thread}</td>
-                                <td>{row.length}</td>
-                                <td>{row.width}</td>
-                                <td>{row.height}</td>
-                              </>
-                            )}
+                        {Object.entries(product.controllerSpecs).map(([key, val]) => (
+                          <tr key={key}>
+                            <td className="spec-label">{key}</td>
+                            <td className="spec-value">{val}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                </>
-              )}
-            </section>
-          )}
-
-          {/* ORDER CODES TAB */}
-          {activeTab === 'order' && (product.orderCodes || product.orderCodesDescription) && (
-            <section className="pd-tab-panel">
-              <h2 className="section-title">Order Code</h2>
-
-              {product.orderCodesDescription && (
-                <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
-                  {product.orderCodesDescription}
                 </div>
-              )}
+              </div>
+            ) : (
+              /* Default Single Spec Table */
+              <div className="pd-specs-table-wrapper">
+                <table className="pd-specs-table">
+                  <tbody>
+                    {Object.entries(product.specs).map(([key, val]) => (
+                      <tr key={key}>
+                        <td className="spec-label">{key}</td>
+                        <td className="spec-value">{val}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
 
-              {product.orderCodes && (
+        {/* DIMENSIONS & FLOW TAB */}
+        {activeTab === 'dimensions' && (
+          <section className="pd-tab-panel">
+            {product.technicalFlow && (
+              <>
+                <h2 className="section-title">Technical Specifications - Flow</h2>
                 <div className="pd-specs-table-wrapper">
                   <table className="pd-data-table">
                     <thead>
                       <tr>
-                        {product.orderCodeColumns ? (
-                          product.orderCodeColumns.map((col, i) => (
-                            <th key={i}>{col.label}</th>
-                          ))
+                        {product.technicalFlowColumns ? (
+                          product.technicalFlowColumns.map((col, i) => <th key={i}>{col.label}</th>)
                         ) : (
-                          // Fallback for existing U51 data if not updated
                           <>
-                            <th>Size</th>
-                            <th>Flow Rate (m³/h)</th>
-                            <th>M-Bus (U5111)</th>
-                            <th>wM-Bus (U5112)</th>
-                            <th>Modbus RTU (U5114)</th>
-                            <th>NB-IoT (U5116)</th>
+                            <th>Nominal Diameter (DN)</th>
+                            <th>Minimum Flow qmin (m³/h)</th>
+                            <th>Nominal Flow qp (m³/h)</th>
+                            <th>Maximum Flow qmax (m³/h)</th>
+                            <th>Length (mm)</th>
                           </>
                         )}
                       </tr>
                     </thead>
                     <tbody>
-                      {product.orderCodes.map((row, i) => (
+                      {product.technicalFlow.map((row, i) => (
                         <tr key={i}>
-                          {product.orderCodeColumns ? (
-                            product.orderCodeColumns.map((col, j) => (
-                              <td key={j}>{row[col.key]}</td>
-                            ))
+                          {product.technicalFlowColumns ? (
+                            product.technicalFlowColumns.map((col, j) => <td key={j}>{row[col.key]}</td>)
                           ) : (
                             <>
                               <td>{row.dn}</td>
-                              <td>{row.flow}</td>
-                              <td>{row.mbus}</td>
-                              <td>{row.wmbus}</td>
-                              <td>{row.modbus}</td>
-                              <td>{row.nbiot}</td>
+                              <td>{row.min}</td>
+                              <td>{row.nominal}</td>
+                              <td>{row.max}</td>
+                              <td>{row.length}</td>
                             </>
                           )}
                         </tr>
@@ -787,63 +745,172 @@ export default function ProductDetails() {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </section>
-          )}
+              </>
+            )}
 
-          {/* APPLICATION TAB */}
-          {activeTab === 'application' && (product.application || product.applicationDescription) && (
-            <section className="pd-tab-panel">
-              <h2 className="section-title">Applications</h2>
-
-              {product.applicationDescription && (
-                <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
-                  {product.applicationDescription}
-                </div>
-              )}
-
-              {product.application && (
-                Array.isArray(product.application) ? (
-                  <ul className="pd-features-list">
-                    {product.application.map((app, i) => (
-                      <li key={i}>{app}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div style={{ whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
-                    {product.application}
-                  </div>
-                )
-              )}
-            </section>
-          )}
-
-          {/* RELATED TAB */}
-          {activeTab === 'related' && relatedProducts.length > 0 && (
-            <section className="pd-tab-panel pd-related">
-              <h2 className="section-title">Related Products</h2>
-              <div className="related-grid">
-                {relatedProducts.map(rp => (
-                  <Link
-                    to={rp.isVariant
-                      ? `/products/${category}/${subcategory}/${rp.parentId}/${rp.id}`
-                      : `/products/${category}/${subcategory}/${rp.id}`
-                    }
-                    key={rp.id}
-                    className="related-card"
-                  >
-                    <div className="related-img">
-                      <img src={rp.image} alt={rp.name} />
-                    </div>
-                    <h4 className="related-title">{rp.name}</h4>
-                  </Link>
-                ))}
+            {product.dimensionsDescription && (
+              <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
+                <h2 className="section-title">Dimensions</h2>
+                {product.dimensionsDescription}
               </div>
-            </section>
-          )}
-        </div>
-      </div>
+            )}
 
+            {product.dimensions && (
+              <>
+                <h2 className="section-title">Dimensions</h2>
+                <div className="pd-specs-table-wrapper">
+                  <table className="pd-data-table">
+                    <thead>
+                      <tr>
+                        {product.dimensionsColumns ? (
+                          product.dimensionsColumns.map((col, i) => <th key={i}>{col.label}</th>)
+                        ) : (
+                          <>
+                            <th>Nominal Diameter (DN)</th>
+                            <th>Thread Size</th>
+                            <th>Length (L)</th>
+                            <th>Width (W)</th>
+                            <th>Height (H)</th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {product.dimensions.map((row, i) => (
+                        <tr key={i}>
+                          {product.dimensionsColumns ? (
+                            product.dimensionsColumns.map((col, j) => <td key={j}>{row[col.key]}</td>)
+                          ) : (
+                            <>
+                              <td>{row.dn}</td>
+                              <td>{row.thread}</td>
+                              <td>{row.length}</td>
+                              <td>{row.width}</td>
+                              <td>{row.height}</td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {/* ORDER CODES TAB */}
+        {activeTab === 'order' && (product.orderCodes || product.orderCodesDescription) && (
+          <section className="pd-tab-panel">
+            <h2 className="section-title">Order Code</h2>
+
+            {product.orderCodesDescription && (
+              <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
+                {product.orderCodesDescription}
+              </div>
+            )}
+
+            {product.orderCodes && (
+              <div className="pd-specs-table-wrapper">
+                <table className="pd-data-table">
+                  <thead>
+                    <tr>
+                      {product.orderCodeColumns ? (
+                        product.orderCodeColumns.map((col, i) => (
+                          <th key={i}>{col.label}</th>
+                        ))
+                      ) : (
+                        // Fallback for existing U51 data if not updated
+                        <>
+                          <th>Size</th>
+                          <th>Flow Rate (m³/h)</th>
+                          <th>M-Bus (U5111)</th>
+                          <th>wM-Bus (U5112)</th>
+                          <th>Modbus RTU (U5114)</th>
+                          <th>NB-IoT (U5116)</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.orderCodes.map((row, i) => (
+                      <tr key={i}>
+                        {product.orderCodeColumns ? (
+                          product.orderCodeColumns.map((col, j) => (
+                            <td key={j}>{row[col.key]}</td>
+                          ))
+                        ) : (
+                          <>
+                            <td>{row.dn}</td>
+                            <td>{row.flow}</td>
+                            <td>{row.mbus}</td>
+                            <td>{row.wmbus}</td>
+                            <td>{row.modbus}</td>
+                            <td>{row.nbiot}</td>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* APPLICATION TAB */}
+        {activeTab === 'application' && (product.application || product.applicationDescription) && (
+          <section className="pd-tab-panel">
+            <h2 className="section-title">Applications</h2>
+
+            {product.applicationDescription && (
+              <div style={{ marginBottom: '20px', whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
+                {product.applicationDescription}
+              </div>
+            )}
+
+            {product.application && (
+              Array.isArray(product.application) ? (
+                <ul className="pd-features-list">
+                  {product.application.map((app, i) => (
+                    <li key={i}>{app}</li>
+                  ))}
+                </ul>
+              ) : (
+                <div style={{ whiteSpace: 'pre-line', fontSize: '15px', color: '#555', lineHeight: '1.6' }}>
+                  {product.application}
+                </div>
+              )
+            )}
+          </section>
+        )}
+
+        {/* RELATED TAB */}
+        {activeTab === 'related' && relatedProducts.length > 0 && (
+          <section className="pd-tab-panel pd-related">
+            <h2 className="section-title">Related Products</h2>
+            <div className="related-grid">
+              {relatedProducts.map(rp => (
+                <Link
+                  to={rp.isVariant
+                    ? `/products/${category}/${subcategory}/${rp.parentId}/${rp.id}`
+                    : `/products/${category}/${subcategory}/${rp.id}`
+                  }
+                  key={rp.id}
+                  className="related-card"
+                >
+                  <div className="related-img">
+                    <img src={rp.image} alt={rp.name} />
+                  </div>
+                  <h4 className="related-title">{rp.name}</h4>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
-  );
+
+  </div>
+);
 }

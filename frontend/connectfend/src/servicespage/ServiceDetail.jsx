@@ -12,6 +12,11 @@ export default function ServiceDetail() {
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [dashboardIndex, setDashboardIndex] = useState(0);
+    const [openAccordion, setOpenAccordion] = useState(null);
+
+    const toggleAccordion = (index) => {
+        setOpenAccordion(openAccordion === index ? null : index);
+    };
 
     useEffect(() => {
         // Find Service
@@ -61,7 +66,7 @@ export default function ServiceDetail() {
         if (service && service.heroImages && service.heroImages.length > 1) {
             const interval = setInterval(() => {
                 setCurrentImageIndex((prevIndex) => (prevIndex + 1) % service.heroImages.length);
-            }, 3000);
+            }, 2000);
             return () => clearInterval(interval);
         }
     }, [service]);
@@ -200,68 +205,75 @@ export default function ServiceDetail() {
                 {service.subItems && (
                     <section className="pd-section">
                         <h2 className="section-title">Components</h2>
-                        <div className="sub-items-grid">
+                        <div className="sub-items-accordion">
                             {service.subItems.map((sub, i) => (
-                                <div key={i} className="sub-item-card">
-                                    {sub.img && (
-                                        <div className="sub-item-image-container">
-                                            <img src={sub.img} alt={sub.title} className={`sub-item-image ${sub.imgClass || ""}`} />
-                                        </div>
-                                    )}
-                                    <h3 className="sub-item-title">{sub.title}</h3>
-                                    <p className="sub-item-desc">{sub.desc}</p>
+                                <div key={i} className={`accordion-item ${openAccordion === i ? "active" : ""}`}>
+                                    <div className="accordion-header" onClick={() => toggleAccordion(i)}>
+                                        <h3 className="accordion-title">{sub.title}</h3>
+                                        <span className="accordion-icon">{openAccordion === i ? "−" : "+"}</span>
+                                    </div>
+                                    <div className="accordion-body" style={{ maxHeight: openAccordion === i ? "1000px" : "0" }}>
+                                        <div className="accordion-content">
+                                            {sub.img && (
+                                                <div className="sub-item-image-container">
+                                                    <img src={sub.img} alt={sub.title} className={`sub-item-image ${sub.imgClass || ""}`} />
+                                                </div>
+                                            )}
+                                            <p className="sub-item-desc">{sub.desc}</p>
 
-                                    {/* Nested keyFeatures */}
-                                    {sub.keyFeatures && (
-                                        <div className="sub-item-list-container">
-                                            <h4 className="sub-item-list-title">Key Features</h4>
-                                            <ul className="sub-item-list">
-                                                {sub.keyFeatures.map((kf, k) => (
-                                                    <li key={k}>{kf}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Nested technicalHighlights */}
-                                    {sub.technicalHighlights && (
-                                        <div className="sub-item-list-container">
-                                            <h4 className="sub-item-list-title">Technical Highlights</h4>
-                                            <ul className="sub-item-list">
-                                                {sub.technicalHighlights.map((th, k) => (
-                                                    <li key={k}>{th}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Nested keyBenefits */}
-                                    {sub.keyBenefits && (
-                                        <div className="sub-item-list-container">
-                                            <h4 className="sub-item-list-title">Key Benefits</h4>
-                                            <ul className="sub-item-list">
-                                                {sub.keyBenefits.map((kb, k) => (
-                                                    <li key={k}>{kb}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Nested multiLevelAlerts */}
-                                    {sub.multiLevelAlerts && (
-                                        <div className="sub-item-list-container">
-                                            {sub.multiLevelAlerts.map((alert, k) => (
-                                                <div key={k} className="alert-group">
-                                                    <h5 className="alert-type">{alert.type}</h5>
+                                            {/* Nested keyFeatures */}
+                                            {sub.keyFeatures && (
+                                                <div className="sub-item-list-container">
+                                                    <h4 className="sub-item-list-title">Key Features</h4>
                                                     <ul className="sub-item-list">
-                                                        {alert.points.map((pt, p) => (
-                                                            <li key={p}>{pt}</li>
+                                                        {sub.keyFeatures.map((kf, k) => (
+                                                            <li key={k}>{kf}</li>
                                                         ))}
                                                     </ul>
                                                 </div>
-                                            ))}
+                                            )}
+
+                                            {/* Nested technicalHighlights */}
+                                            {sub.technicalHighlights && (
+                                                <div className="sub-item-list-container">
+                                                    <h4 className="sub-item-list-title">Technical Highlights</h4>
+                                                    <ul className="sub-item-list">
+                                                        {sub.technicalHighlights.map((th, k) => (
+                                                            <li key={k}>{th}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {/* Nested keyBenefits */}
+                                            {sub.keyBenefits && (
+                                                <div className="sub-item-list-container">
+                                                    <h4 className="sub-item-list-title">Key Benefits</h4>
+                                                    <ul className="sub-item-list">
+                                                        {sub.keyBenefits.map((kb, k) => (
+                                                            <li key={k}>{kb}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {/* Nested multiLevelAlerts */}
+                                            {sub.multiLevelAlerts && (
+                                                <div className="sub-item-list-container">
+                                                    {sub.multiLevelAlerts.map((alert, k) => (
+                                                        <div key={k} className="alert-group">
+                                                            <h5 className="alert-type">{alert.type}</h5>
+                                                            <ul className="sub-item-list">
+                                                                {alert.points.map((pt, p) => (
+                                                                    <li key={p}>{pt}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

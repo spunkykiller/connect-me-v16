@@ -143,14 +143,17 @@
     flex-direction: column !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     height: 100% !important;
-    min-height: 460px;
-    /* Encourages a more square-like proportion */
+    min-height: 480px;
+    /* Slight increase to accommodate all content types */
+    justify-content: space-between;
+    /* Ensure footer pushes to bottom */
     min-width: 0 !important;
 }
 
 .premium-product-card:hover {
     transform: translateY(-8px) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 15px 35px rgba(38, 170, 227, 0.2) !important;
+    /* Blue glow */
     border-color: #26AAE3 !important;
 }
 

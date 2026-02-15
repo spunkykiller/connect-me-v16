@@ -1,6 +1,6 @@
 import "./header.css";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Logo from "../assets/logo.webp";
 import headerLogo from "../assets/connectME_logo_transparent.webp";
 import { FaBars, FaTimes, FaChevronDown, FaChevronUp } from "react-icons/fa";
@@ -13,6 +13,7 @@ import productData from "../data/productData";
 import serviceData from "../data/serviceData";
 
 export default function Header() {
+  const location = useLocation();
   const [openDropdown, setOpenDropdown] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMobileSection, setActiveMobileSection] = useState("");
@@ -146,7 +147,7 @@ export default function Header() {
           {/* PRODUCTS DROPDOWN */}
           <li>
             <span
-              className="nav-link"
+              className={`nav-link ${location.pathname.startsWith("/products") ? "active" : ""}`}
               onClick={(e) => toggleDropdown("products", e)}
             >
               Products
@@ -159,7 +160,7 @@ export default function Header() {
           {/* SOLUTIONS DROPDOWN */}
           <li>
             <span
-              className="nav-link"
+              className={`nav-link ${location.pathname.includes("/solutions") ? "active" : ""}`}
               onClick={(e) => toggleDropdown("solutions", e)}
             >
               Solutions
@@ -171,14 +172,42 @@ export default function Header() {
 
           {/* SERVICES LINK (Direct) */}
           <li>
-            <Link to="/services" className="nav-link" onClick={handleMenuClick}>
+            <Link
+              to="/services"
+              className={`nav-link ${location.pathname === "/services" || (location.pathname.startsWith("/services") && !location.pathname.includes("/solutions")) ? "active" : ""}`}
+              onClick={handleMenuClick}
+            >
               Services
             </Link>
           </li>
 
-          <li><Link to="/work" onClick={handleMenuClick}>Work</Link></li>
-          <li><Link to="/blog" onClick={handleMenuClick}>Blog</Link></li>
-          <li><Link to="/about" onClick={handleMenuClick}>About</Link></li>
+          <li>
+            <Link
+              to="/work"
+              className={`nav-link ${location.pathname.startsWith("/work") ? "active" : ""}`}
+              onClick={handleMenuClick}
+            >
+              Work
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/blog"
+              className={`nav-link ${location.pathname.startsWith("/blog") ? "active" : ""}`}
+              onClick={handleMenuClick}
+            >
+              Blog
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/about"
+              className={`nav-link ${location.pathname.startsWith("/about") ? "active" : ""}`}
+              onClick={handleMenuClick}
+            >
+              About
+            </Link>
+          </li>
         </ul>
       </nav>
 

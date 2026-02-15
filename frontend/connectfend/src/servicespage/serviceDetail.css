@@ -146,11 +146,12 @@
 }
 
 /* ======================================================
-   WHERE IT WORKS BEST GRID (AQI)
+   WHERE IT WORKS BEST GRID (AQI) & APPLICATIONS
 ====================================================== */
 .where-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
 }
 
@@ -161,6 +162,9 @@
     padding: 20px;
     text-align: center;
     transition: all 0.2s;
+    flex: 0 1 250px;
+    /* Flexible basis */
+    min-width: 200px;
 }
 
 .where-card:hover {
@@ -285,12 +289,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    outline: none;
+    /* Remove outline */
+    box-shadow: none;
+    /* Remove placeholder stroke effects */
 }
 
 .dashboard-nav:hover {
     background: var(--color-primary);
     color: white;
+    /* White icon */
     transform: scale(1.1);
+    /* No border stroke */
 }
 
 .dashboard-dots {
@@ -386,6 +396,79 @@
 }
 
 /* ======================================================
+   ACCORDION STYLES (Components)
+===================================================== */
+.sub-items-accordion {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.accordion-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.accordion-item.active {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-color: var(--color-primary);
+}
+
+.accordion-header {
+    padding: 20px;
+    background: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.accordion-item.active .accordion-header {
+    background: #eef8fc;
+    /* Light blue tint */
+}
+
+.accordion-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.accordion-item.active .accordion-title {
+    color: var(--color-primary);
+}
+
+.accordion-icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #666;
+    line-height: 1;
+}
+
+.accordion-body {
+    transition: max-height 0.4s ease-out;
+    overflow: hidden;
+    background: #fff;
+}
+
+.accordion-content {
+    padding: 25px;
+    border-top: 1px solid #eee;
+}
+
+.sub-item-desc {
+    font-size: var(--font-body-sm);
+    color: var(--color-text-body);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* ======================================================
    CONCLUSION SECTION
 ===================================================== */
 .conclusion-text {
@@ -399,7 +482,6 @@
     border-radius: 8px;
 }
 
-/* ======================================================
 /* ======================================================
    OFFERINGS SECTION
 ===================================================== */
@@ -457,8 +539,6 @@
     color: var(--color-text-body);
     margin-bottom: 30px;
 }
-
-
 
 .solutions-for-list {
     list-style: none;

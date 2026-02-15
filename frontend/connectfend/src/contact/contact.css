@@ -27,11 +27,14 @@
 .contact-input,
 .contact-textarea {
   width: 100%;
-  padding: var(--spacing-card);
+  padding: 15px;
+  /* Reduced padding */
   border-radius: 8px;
   border: 1px solid #aaa;
   background: #eaeaea;
   font-size: var(--font-body);
+  /* Should be smaller now */
+  font-family: inherit;
   outline: none;
 }
 
